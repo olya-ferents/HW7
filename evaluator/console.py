@@ -174,11 +174,15 @@ def _budget_lines(row: dict, columns: int) -> list[str]:
     stats = row.get("budget_stats")
     if not stats:
         return []
+    verdict = row.get("budget_verdict") or {}
+    status = "PASS" if verdict.get("passed") else "FAIL"
+    detail = verdict.get("detail", "")
     return (
         _field("per run:", f"tokens {stats['tokens_per_run']}", columns)
         + _field("", f"latency_ms {stats['latency_ms_per_run']}", columns)
-        + _field("budget", f"median tokens {stats['tokens_median']:g}; "
-                 f"max latency {stats['latency_ms_max']}ms", columns)
+        + _field("budget", f"{status}: {detail}; median tokens "
+                 f"{stats['tokens_median']:g}; max latency "
+                 f"{stats['latency_ms_max']}ms", columns)
     )
 
 

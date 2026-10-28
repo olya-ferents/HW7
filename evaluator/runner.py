@@ -245,6 +245,21 @@ def _budget(meta: dict, results: list[dict]) -> A.Verdict:
                      f"median tokens {tokens:g}, identical calls {identical}")
 
 
+def _evaluate_with_budget(case: dict, results: list[dict]) -> tuple[A.Verdict, A.Verdict | None]:
+    meta = case["additional_metadata"]
+    verdict = evaluate(case, results)
+    if "budget" not in meta:
+        return verdict, None
+    if meta["assertion"] == "budget":
+        return verdict, verdict
+
+    budget_verdict = _budget(meta, results)
+    if not budget_verdict.passed:
+        verdict.passed = False
+        verdict.detail = f"{verdict.detail}; budget: {budget_verdict.detail}"
+    return verdict, budget_verdict
+
+
 
 def _summarize_after(meta: dict) -> int | None:
     ""
@@ -365,12 +380,13 @@ def run_case(case: dict) -> dict:
     results = []
     skipped = False
     traces_dir = None
+    budget_verdict = None
     try:
         for k in range(1, runs + 1):
             results.append(_one_run(case))
             if os.environ.get("TRACES") == "1":
                 traces_dir = _dump_traces(case["id"], k, results[-1])
-        verdict = evaluate(case, results)
+        verdict, budget_verdict = _evaluate_with_budget(case, results)
     except JudgeUnavailable as e:
         verdict = A.Verdict(False, 7, "judge", str(e))
         skipped = True
@@ -393,6 +409,8 @@ def run_case(case: dict) -> dict:
         "tool_calls": (stand.tool_calls(results[-1].get("trace") or {})
                        if results else []),
     }
+    if budget_verdict is not None:
+        row["budget_verdict"] = budget_verdict.as_dict()
     if case.get("turns") and results:
         row["transcript"] = _transcript(results[-1])
         if meta["assertion"] == "dialog":
@@ -400,7 +418,7 @@ def run_case(case: dict) -> dict:
             row["run_stats"] = _run_stats(row["runs_detail"])
     if traces_dir:
         row["traces_dir"] = traces_dir
-    if meta["assertion"] == "budget" and results:
+    if "budget" in meta and results:
         row["budget_stats"] = _budget_stats(results)
     return row
 

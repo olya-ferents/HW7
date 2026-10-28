@@ -1,10 +1,15 @@
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
+import assertions as A
 import console
 import loader
 import runner
+
+
+CASE = Path(__file__).resolve().parent.parent / "l05_dialogs.jsonl"
 
 
 def result(tokens, latency=1000):
@@ -72,6 +77,51 @@ class BudgetTests(unittest.TestCase):
                 ]
                 verdict = runner.evaluate(case, [run])
                 self.assertEqual(verdict.passed, expected)
+
+    def test_invariant_case_checks_budget_from_same_runs(self):
+        case = loader.load(CASE)[0]
+        self.assertEqual(case["additional_metadata"]["assertion"], "dialog")
+        self.assertIn("tokens_total", case["additional_metadata"]["budget"])
+        results = [result(tokens) for tokens in [70000, 71000, 72000, 73000, 74000]]
+        for run in results:
+            run["turns"] = [{"question": "Q", "answer": "A", "trace": {}}]
+        invariant = A.Verdict(True, 3, "dialog", "all invariant checks passed")
+        with patch.object(runner, "evaluate", return_value=invariant) as evaluate:
+            verdict, budget_verdict = runner._evaluate_with_budget(case, results)
+
+        evaluate.assert_called_once_with(case, results)
+        self.assertFalse(verdict.passed)
+        self.assertIn("budget: median tokens 72000 > 68000", verdict.detail)
+        self.assertFalse(budget_verdict.passed)
+        self.assertEqual(budget_verdict.assertion, "budget")
+
+    def test_invariant_failure_is_preserved_when_budget_passes(self):
+        case = loader.load(CASE)[0]
+        results = [result(tokens) for tokens in [60000, 61000, 62000, 63000, 64000]]
+        invariant = A.Verdict(False, 3, "dialog", "reason code mismatch")
+        with patch.object(runner, "evaluate", return_value=invariant):
+            verdict, budget_verdict = runner._evaluate_with_budget(case, results)
+
+        self.assertFalse(verdict.passed)
+        self.assertEqual(verdict.detail, "reason code mismatch")
+        self.assertTrue(budget_verdict.passed)
+        self.assertIn("median tokens 62000", budget_verdict.detail)
+
+    def test_run_case_reports_budget_verdict_for_invariant_case(self):
+        case = loader.load(CASE)[0]
+        case.pop("turns")
+        results = [result(tokens) for tokens in [70000, 71000, 72000, 73000, 74000]]
+        invariant = A.Verdict(True, 3, "dialog", "all invariant checks passed")
+        with patch.dict(os.environ, {"REPEAT": "", "TRACES": ""}):
+            with patch.object(runner, "_one_run", side_effect=results):
+                with patch.object(runner, "evaluate", return_value=invariant):
+                    row = runner.run_case(case)
+
+        self.assertFalse(row["verdict"]["passed"])
+        self.assertFalse(row["budget_verdict"]["passed"])
+        self.assertEqual(row["budget_stats"]["tokens_median"], 72000)
+        text = "\n".join(console.case_lines(case, row, columns=120))
+        self.assertIn("budget    FAIL:", text)
 
     def test_report_and_console_include_per_run_metrics(self):
         case = {
