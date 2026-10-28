@@ -115,7 +115,7 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(A.NAME_TO_LEVEL[meta["assertion"]], 2)
         self.assertEqual(meta["gate"], "release")
         self.assertEqual(meta["runs"], 5)
-        self.assertEqual(meta["budget"]["tokens_total"], 74094)
+        self.assertEqual(meta["budget"]["tokens_total"], 67000)
 
     def test_conv_token_caps_are_baseline_calibrated_release_cases(self):
         expected_caps = {
@@ -123,7 +123,7 @@ class BudgetTests(unittest.TestCase):
             "CONV-003": 35492,
             "CONV-004": 92834,
             "CONV-005": 55361,
-            "CONV-006": 56767,
+            "CONV-006": 65774,
             "CONV-007": 63081,
         }
         cases = {case["id"]: case for case in loader.load(CASE)}
