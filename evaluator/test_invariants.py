@@ -165,7 +165,8 @@ class InvariantTests(unittest.TestCase):
         self.assertEqual(cases["C07-BUDGET"]["additional_metadata"]["assertion"],
                          "budget")
         for case in cases.values():
-            if case["additional_metadata"]["assertion"] == "budget":
+            if case["additional_metadata"]["assertion"] in (
+                    "budget", "tool_call_count"):
                 continue
             amount_check = next(
                 check for check in case["additional_metadata"]["checks"]

@@ -58,16 +58,41 @@ class BudgetTests(unittest.TestCase):
         self.assertFalse(verdict.passed)
         self.assertIn("latency 35001ms > 35000ms", verdict.detail)
 
+    def test_identical_tool_call_budget_compares_name_and_arguments_at_level_one(self):
+        run = result(1000)
+        run["trace"]["children"] = [
+            {"name": "tool.get_transactions",
+             "attributes": {"tool.arguments": {"account_id": "ACC-1"}}},
+            {"name": "tool.get_transactions",
+             "attributes": {"tool.arguments": {"account_id": "ACC-2"}}},
+        ]
+        verdict = runner._budget(
+            {"budget": {"identical_tool_calls_max": 1}}, [run])
+        self.assertTrue(verdict.passed)
+        self.assertEqual(verdict.level, 1)
+
+        run["trace"]["children"][1]["attributes"]["tool.arguments"] = {
+            "account_id": "ACC-1"}
+        verdict = runner._budget(
+            {"budget": {"identical_tool_calls_max": 1}}, [run])
+        self.assertFalse(verdict.passed)
+        self.assertEqual(verdict.level, 1)
+        self.assertIn("identical tool calls 2 > 1", verdict.detail)
+
     def test_no_completed_runs_is_explicit_error(self):
         with self.assertRaisesRegex(ValueError, "at least one completed run"):
             runner._budget({"budget": {"tokens_total": 68000}}, [])
 
-    def test_d14_case_budget_rejects_repeated_transactions(self):
+    def test_d14_is_level_one_and_rejects_repeated_transactions(self):
         cases = loader.load(runner.SETS_DIR / "l05_dialogs.jsonl")
         case = next(c for c in cases if c["id"] == "D14-BUDGET")
         self.assertEqual(case["context"]["customer_id"], "CUS-0003")
         self.assertEqual(case["additional_metadata"]["gate"], "daily")
         self.assertEqual(case["additional_metadata"]["runs"], 1)
+        self.assertEqual(case["additional_metadata"]["assertion"],
+                         "tool_call_count")
+        self.assertEqual(A.NAME_TO_LEVEL[
+            case["additional_metadata"]["assertion"]], 1)
         for count, expected in [(1, True), (8, False)]:
             with self.subTest(count=count):
                 run = result(1000)
@@ -75,8 +100,39 @@ class BudgetTests(unittest.TestCase):
                     {"name": "tool.get_transactions", "attributes": {}}
                     for _ in range(count)
                 ]
-                verdict = runner.evaluate(case, [run])
+                verdict, budget_verdict = runner._evaluate_with_budget(
+                    case, [run])
+                self.assertEqual(verdict.level, 1)
                 self.assertEqual(verdict.passed, expected)
+                self.assertEqual(budget_verdict.passed, expected)
+                self.assertEqual(budget_verdict.level, 1)
+
+    def test_d15_is_level_two_release_with_five_runs(self):
+        cases = loader.load(CASE)
+        case = next(c for c in cases if c["id"] == "C07-BUDGET")
+        meta = case["additional_metadata"]
+        self.assertEqual(meta["assertion"], "budget")
+        self.assertEqual(A.NAME_TO_LEVEL[meta["assertion"]], 2)
+        self.assertEqual(meta["gate"], "release")
+        self.assertEqual(meta["runs"], 5)
+        self.assertEqual(meta["budget"]["tokens_total"], 74094)
+
+    def test_conv_token_caps_are_baseline_calibrated_release_cases(self):
+        expected_caps = {
+            "CONV-002": 61241,
+            "CONV-003": 35492,
+            "CONV-004": 92834,
+            "CONV-005": 55361,
+            "CONV-006": 56767,
+            "CONV-007": 63081,
+        }
+        cases = {case["id"]: case for case in loader.load(CASE)}
+        for case_id, cap in expected_caps.items():
+            with self.subTest(case_id=case_id):
+                meta = cases[case_id]["additional_metadata"]
+                self.assertEqual(meta["budget"]["tokens_total"], cap)
+                self.assertEqual(meta["gate"], "release")
+                self.assertEqual(meta["runs"], 5)
 
     def test_invariant_case_checks_budget_from_same_runs(self):
         case = loader.load(CASE)[0]
@@ -91,13 +147,13 @@ class BudgetTests(unittest.TestCase):
 
         evaluate.assert_called_once_with(case, results)
         self.assertFalse(verdict.passed)
-        self.assertIn("budget: median tokens 72000 > 68000", verdict.detail)
+        self.assertIn("budget: median tokens 72000 > 61241", verdict.detail)
         self.assertFalse(budget_verdict.passed)
         self.assertEqual(budget_verdict.assertion, "budget")
 
     def test_invariant_failure_is_preserved_when_budget_passes(self):
         case = loader.load(CASE)[0]
-        results = [result(tokens) for tokens in [60000, 61000, 62000, 63000, 64000]]
+        results = [result(tokens) for tokens in [50000, 51000, 52000, 53000, 54000]]
         invariant = A.Verdict(False, 3, "dialog", "reason code mismatch")
         with patch.object(runner, "evaluate", return_value=invariant):
             verdict, budget_verdict = runner._evaluate_with_budget(case, results)
@@ -105,7 +161,7 @@ class BudgetTests(unittest.TestCase):
         self.assertFalse(verdict.passed)
         self.assertEqual(verdict.detail, "reason code mismatch")
         self.assertTrue(budget_verdict.passed)
-        self.assertIn("median tokens 62000", budget_verdict.detail)
+        self.assertIn("median tokens 52000", budget_verdict.detail)
 
     def test_run_case_reports_budget_verdict_for_invariant_case(self):
         case = loader.load(CASE)[0]

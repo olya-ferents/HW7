@@ -4,6 +4,7 @@ import os
 import statistics
 import sys
 import time
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -225,9 +226,13 @@ def _budget(meta: dict, results: list[dict]) -> A.Verdict:
     tokens = stats["tokens_median"]
     identical = 0
     for r in results:
-        names = [c["name"] for c in stand.tool_calls(r.get("trace") or {})]
-        identical = max(identical,
-                        max((names.count(n) for n in set(names)), default=0))
+        calls = [
+            (call["name"], json.dumps(
+                call.get("arguments"), sort_keys=True, separators=(",", ":"),
+                ensure_ascii=False))
+            for call in stand.tool_calls(r.get("trace") or {})
+        ]
+        identical = max(identical, max(Counter(calls).values(), default=0))
     problems = []
     if "tokens_total" in budget and tokens > budget["tokens_total"]:
         problems.append(f"median tokens {tokens:g} > {budget['tokens_total']}")
@@ -240,7 +245,8 @@ def _budget(meta: dict, results: list[dict]) -> A.Verdict:
         if worst > budget["latency_ms"]:
             problems.append(f"latency {worst}ms > {budget['latency_ms']}ms")
     ok = not problems
-    return A.Verdict(ok, 2, "budget",
+    level = 2 if {"tokens_total", "latency_ms"} & budget.keys() else 1
+    return A.Verdict(ok, level, "budget",
                      "; ".join(problems) if problems else
                      f"median tokens {tokens:g}, identical calls {identical}")
 
