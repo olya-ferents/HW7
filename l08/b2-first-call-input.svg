@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="510" viewBox="0 0 800 510" role="img" aria-labelledby="title desc">
+  <title id="title">B2: first-call input tokens by step</title>
+  <desc id="desc">Per-step medians of five runs per profile. Clean: 2627, 3458, 3904, 4791, 5580, 5683, 5765. Lesson-08: 2627, 3922, 4646, 6097, 7479, 7567, 7654. Step-six threshold: 6500.</desc>
+  <rect width="800" height="510" fill="white"/>
+  <g font-family="sans-serif" font-size="14" fill="#222">
+    <text x="80" y="25" font-size="20">B2: first-call input tokens by step</text>
+    <text x="80" y="47">Median of 5 runs per profile, 2026-10-27</text>
+    <g stroke="#ddd">
+      <path d="M80 440H710 M80 340H710 M80 240H710 M80 140H710"/>
+    </g>
+    <g text-anchor="end">
+      <text x="70" y="445">0</text><text x="70" y="345">2000</text>
+      <text x="70" y="245">4000</text><text x="70" y="145">6000</text>
+      <text x="70" y="45">8000</text>
+    </g>
+    <path d="M80 60V440H710" fill="none" stroke="#333"/>
+    <path d="M80 115H710" stroke="#777" stroke-dasharray="6 5"/>
+    <text x="85" y="108" fill="#555">6500 threshold (tested at step 6)</text>
+    <polyline points="80,308.65 180,267.1 280,244.8 380,200.45 480,161 580,155.85 680,151.75" fill="none" stroke="#1463ba" stroke-width="3"/>
+    <polyline points="80,308.65 180,243.9 280,207.7 380,135.15 480,66.05 580,61.65 680,57.3" fill="none" stroke="#b53b22" stroke-width="3"/>
+    <g fill="#1463ba">
+      <circle cx="80" cy="308.65" r="4"/><circle cx="180" cy="267.1" r="4"/>
+      <circle cx="280" cy="244.8" r="4"/><circle cx="380" cy="200.45" r="4"/>
+      <circle cx="480" cy="161" r="4"/><circle cx="580" cy="155.85" r="4"/>
+      <circle cx="680" cy="151.75" r="4"/>
+      <text x="590" y="178">clean: 5683 at step 6</text>
+    </g>
+    <g fill="#b53b22">
+      <circle cx="80" cy="308.65" r="4"/><circle cx="180" cy="243.9" r="4"/>
+      <circle cx="280" cy="207.7" r="4"/><circle cx="380" cy="135.15" r="4"/>
+      <circle cx="480" cy="66.05" r="4"/><circle cx="580" cy="61.65" r="4"/>
+      <circle cx="680" cy="57.3" r="4"/>
+      <text x="450" y="90">lesson-08: 7567 at step 6</text>
+    </g>
+    <g text-anchor="middle">
+      <text x="80" y="462">1</text><text x="180" y="462">2</text>
+      <text x="280" y="462">3</text><text x="380" y="462">4</text>
+      <text x="480" y="462">5</text><text x="580" y="462">6</text>
+      <text x="680" y="462">7</text><text x="380" y="490">Dialog step</text>
+    </g>
+  </g>
+</svg>

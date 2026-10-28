@@ -1,0 +1,35 @@
+x-eval: &eval
+  image: python:3.12-slim
+  working_dir: /workspace/evaluator
+  entrypoint: ["python", "cli.py"]
+  command: []
+  volumes:
+    - ..:/workspace
+    - ${STAND_DIR:-../../paypilot-stand}/app:/workspace/app:ro
+
+x-eval-env: &eval-env
+  SET: ${SET:-l05_dialogs}
+  GATE: ${GATE:-}
+  CASE: ${CASE:-}
+  SUMMARIZE_AFTER: ${SUMMARIZE_AFTER:-}
+  REPEAT: ${REPEAT:-}
+  TRACES: ${TRACES:-}
+  PAYPILOT_APP_DIR: /workspace/app
+  PYTHONDONTWRITEBYTECODE: "1"
+
+services:
+  eval:
+    <<: *eval
+    environment:
+      <<: *eval-env
+      SERVICE_URL: ${EVAL_STAND_URL:-http://host.docker.internal:8000}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  eval-host:
+    <<: *eval
+    profiles: [host]
+    network_mode: host
+    environment:
+      <<: *eval-env
+      SERVICE_URL: ${EVAL_STAND_URL:-http://127.0.0.1:8000}

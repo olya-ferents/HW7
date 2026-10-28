@@ -1,0 +1,157 @@
+{
+  "prompt_version": "base.v1",
+  "set_hash": "bde27f6a6cca",
+  "profile": "clean",
+  "judge_model": "not-used",
+  "rubric_version": "rubric.v1",
+  "elapsed": 5.2,
+  "set": "l05_dialogs",
+  "gate": "daily",
+  "ran_at": "2026-10-28T14:42:43.251544+00:00",
+  "passed": 1,
+  "total": 1,
+  "skipped": 0,
+  "by_layer": {
+    "orchestration": {
+      "passed": 1,
+      "total": 1
+    }
+  },
+  "coverage": {
+    "cases": 1,
+    "multi_turn": 1,
+    "layers": {
+      "orchestration": 1
+    },
+    "oracles": {
+      "human": 1
+    },
+    "sources": {
+      "L08 B1 B4 Haiku 5.5: clean get_transactions 1 call, D14 8 calls on step 2 in each of 5 runs; empty transactions; threshold counts tool names in final step": 1
+    },
+    "severities": {
+      "high": 1
+    },
+    "ladder_levels": [
+      2
+    ],
+    "gates": {
+      "daily": 1
+    },
+    "human_oracle_pct": 100.0,
+    "severity_filled_pct": 100.0
+  },
+  "cases": [
+    {
+      "skipped": false,
+      "id": "D14-BUDGET",
+      "layer": "orchestration",
+      "oracle": "human",
+      "severity": "high",
+      "gate": "daily",
+      "runs": 1,
+      "verdict": {
+        "passed": true,
+        "level": 2,
+        "assertion": "budget",
+        "detail": "median tokens 11386, identical calls 1"
+      },
+      "answers": [
+        "I checked your account ACC-1004, and there are no recent transactions on it. The history came back empty.\n\nIf you expected to see activity, you could check that you're looking at the right account. I can also search the knowledge base for guidance on where missing transactions might appear, or escalate to a human agent to look into it further."
+      ],
+      "latency_ms": 5205,
+      "tokens": 11386,
+      "tool_calls": [
+        {
+          "name": "get_transactions",
+          "arguments": {
+            "account_id": "ACC-1004"
+          },
+          "result": {
+            "transactions": []
+          }
+        }
+      ],
+      "transcript": [
+        {
+          "turn": 1,
+          "user": "Hi, which accounts do I have?",
+          "answer": "Hello Clara, you have one account with Verta:\n\n- **Account ID:** ACC-1004\n- **Currency:** EUR\n- **Balance:** EUR 145,000.00\n- **Tier:** tier3\n\nIs there anything you'd like to do with this account?",
+          "summarized": false,
+          "tools": [
+            "get_account"
+          ],
+          "tool_calls": [
+            {
+              "name": "get_account",
+              "arguments": {},
+              "result": {
+                "customer": {
+                  "id": "CUS-0003",
+                  "name": "Clara Fischer",
+                  "tier": "tier3"
+                },
+                "accounts": [
+                  {
+                    "id": "ACC-1004",
+                    "customer_id": "CUS-0003",
+                    "currency": "EUR",
+                    "balance": 145000.0,
+                    "tier": "tier3",
+                    "holder": "Clara Fischer"
+                  }
+                ]
+              }
+            }
+          ],
+          "fragments": [],
+          "usage": {
+            "input_tokens": 5349,
+            "output_tokens": 114,
+            "model": "anthropic/claude-haiku-5.5",
+            "cost_usd": 0.00014,
+            "provider_cost_usd": 0.000139
+          }
+        },
+        {
+          "turn": 2,
+          "user": "Can you show my recent transactions?",
+          "answer": "I checked your account ACC-1004, and there are no recent transactions on it. The history came back empty.\n\nIf you expected to see activity, you could check that you're looking at the right account. I can also search the knowledge base for guidance on where missing transactions might appear, or escalate to a human agent to look into it further.",
+          "summarized": false,
+          "tools": [
+            "get_transactions"
+          ],
+          "tool_calls": [
+            {
+              "name": "get_transactions",
+              "arguments": {
+                "account_id": "ACC-1004"
+              },
+              "result": {
+                "transactions": []
+              }
+            }
+          ],
+          "fragments": [],
+          "usage": {
+            "input_tokens": 5771,
+            "output_tokens": 152,
+            "model": "anthropic/claude-haiku-5.5",
+            "cost_usd": 0.000201,
+            "provider_cost_usd": 0.000201
+          }
+        }
+      ],
+      "budget_stats": {
+        "tokens_per_run": [
+          11386
+        ],
+        "tokens_median": 11386,
+        "latency_ms_per_run": [
+          5205
+        ],
+        "latency_ms_max": 5205
+      }
+    }
+  ]
+}
