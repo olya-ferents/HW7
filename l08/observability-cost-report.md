@@ -317,17 +317,20 @@ clean медіана 59250, lesson-08 72252, старий поріг 68000; во
 Стенд після запусків повернуто на clean, health перевірено.
 
 **Повний набір, фінальна конфігурація `49811ba93c4e`:**
-[clean](../reports/l05_dialogs-clean-20261028T175438.json) і
-[lesson-08](../reports/l05_dialogs-lesson-08-20261028T181527.json),
-по 36 діалогів; тривалість 1233.7 с / 1243.0 с.
+Останні повторні прогони `--gate all`: [clean](../reports/l05_dialogs-clean-20261028T194534.json)
+і [lesson-08](../reports/l05_dialogs-lesson-08-20261028T192032.json),
+по 36 діалогів; тривалість 1467.7 с / 1491.0 с. Попередні повні прогони
+нижче збережені для порівняння.
 
 | Профіль | Кейсів PASS | Важливі бюджетні результати |
 |---|---:|---|
-| clean | 3/8 | `C07-BUDGET` L2 PASS: медіана 59233 ≤ 67000, max latency 25807 мс; `D14-BUDGET` L1 PASS: 1 виклик, 11417 токенів, 5431 мс. `CONV-002`–`005` та `CONV-006` мають latency FAIL; `CONV-007` проходить свій бюджет |
-| lesson-08 | 0/8 | `C07-BUDGET` L2 FAIL: 74657 > 67000; `D14-BUDGET` L1 FAIL: 8 однакових викликів > 1. `CONV-004` і `CONV-007` перевищили token cap; усі шість `CONV-*` мають invariant і/або latency FAIL |
+| clean | 2/8 | `C07-BUDGET` L2 PASS: медіана 59472 ≤ 67000; `D14-BUDGET` L1 PASS: 1 виклик. `CONV-007` budget PASS; `CONV-002`–`004` та `CONV-006` мають budget latency FAIL. `CONV-005` отримав HTTP 500 до budget evaluation |
+| lesson-08 | 0/8 | `C07-BUDGET` L2 FAIL: 72721 > 67000; `D14-BUDGET` L1 FAIL: 8 однакових викликів > 1. `CONV-003`, `CONV-004`, `CONV-007` перевищили token cap; latency FAIL в інших budget-кейсах |
 
-Обидва JSON мають hash `49811ba93c4e`; вони отримані після фінального
-вибору бюджетів і містять окремі `budget_verdict` та `budget_stats`.
+Обидва JSON мають hash `49811ba93c4e` та містять `budget_verdict` для
+кейсів, що дійшли до budget evaluation. Після HTTP 500 у `CONV-005` його
+budget verdict відсутній, тому цей прогін не є повним доказом budget
+перевірки саме цього кейсу; треба повторити його після перевірки стенду.
 Після lesson-08 стенд повернуто на clean; `/health` підтвердив
 `active_defects: []`. Старі повні звіти зберігаються як історичні серії,
 але ці два є актуальними для набору з репозиторію.

@@ -77,13 +77,14 @@ L2 token-budget перевіркою: медіана п'яти діалогів,
 
 | Що | Профіль / модель | Звіт |
 | --- | --- | --- |
-| набір `l05_dialogs` | clean / Haiku 5.5, 3/8 PASS | [clean](./reports/l05_dialogs-clean-20261028T175438.json) |
-| набір `l05_dialogs` | lesson-08 / Haiku 5.5, 0/8 PASS | [lesson-08](./reports/l05_dialogs-lesson-08-20261028T181527.json) |
+| набір `l05_dialogs` | clean / Haiku 5.5, 2/8 PASS | [clean](./reports/l05_dialogs-clean-20261028T194534.json) |
+| набір `l05_dialogs` | lesson-08 / Haiku 5.5, 0/8 PASS | [lesson-08](./reports/l05_dialogs-lesson-08-20261028T192032.json) |
 | B4 | Haiku 5.5, Gemini 2.5 Flash | [b4.json](./l08/b4.json) |
 
-Обидва фінальні звіти мають hash `49811ba93c4e`, по 36 діалогів, та
-бюджетні вердикти для актуальних порогів. Раніші звіти зберігають історію
-попередніх калібрувань; актуальні результати — 3/8 clean і 0/8 lesson-08.
-Стенд після прогону lesson-08 повернуто на clean (`active_defects: []`).
+Обидва останні звіти мають hash `49811ba93c4e`, по 36 діалогів, та
+`gate: all`. У clean `CONV-005` завершився помилкою HTTP 500, тому ранер
+не зміг сформувати для нього budget verdict; решта бюджетних кейсів мають
+окремі вердикти. Раніші звіти зберігають попередні запуски й калібрування.
+Після прогонів стенд повернуто на clean (`active_defects: []`).
 B4 містить 8 комбінацій по 5 прогонів. Причини FAIL, калібрування та
 обмеження висновків наведено у [звіті](./l08/observability-cost-report.md).
