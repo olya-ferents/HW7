@@ -9,7 +9,7 @@ import loader
 import runner
 
 
-CASE = Path(__file__).resolve().parent.parent / "l05_dialogs.jsonl"
+CASE = Path(__file__).resolve().parent.parent / "sets" / "l05_dialogs.jsonl"
 
 
 def result(tokens, latency=1000):

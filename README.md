@@ -4,14 +4,15 @@
 із HW4, оскільки локальний L03 не підтримував assertions набору та потрібний
 підрахунок токенів діалогу.
 
+## L08 · Observability & Cost Report
+
 - [Заповнений звіт](./l08/observability-cost-report.md) і
   [порожній шаблон](./l08/observability-cost-report.template.md).
-- [Діалогові кейси з бюджетами](./l05_dialogs.jsonl) — у корені, як очікує
-  ранер HW4; папка `sets/` не використовується.
+- [Діалогові кейси з бюджетами](./sets/l05_dialogs.jsonl).
 - [Журнал виконання](./HW7.md), [модель вартості](./l08/cost-model.md),
   [B4](./l08/b4.json) і [результати прогонів](./reports/).
 
-## Запуск
+### Запуск
 
 Потрібні Docker Desktop, локальний PayPilot-стенд на `localhost:8000`,
 його код у `~/paypilot/paypilot-stand` та налаштована модель
@@ -47,7 +48,7 @@ python3 evaluator/cli.py --set l05_dialogs --dry-run
 (cd evaluator && python3 -m unittest test_budget test_invariants)
 ```
 
-## Бюджетні кейси
+### Бюджетні кейси
 
 | id | Що ловить / призначення | identical_tool_calls_max | tokens_total | latency_ms | gate / runs |
 | --- | --- | ---: | ---: | ---: | --- |
@@ -72,7 +73,7 @@ python3 evaluator/cli.py --set l05_dialogs --dry-run
 L2 token-budget перевіркою: медіана п'яти діалогів, D15; latency перевіряється
 за тимчасовим SLA.
 
-## Прогони
+### Прогони
 
 | Що | Профіль / модель | Звіт |
 | --- | --- | --- |

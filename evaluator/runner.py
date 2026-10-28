@@ -19,7 +19,7 @@ import console
 import stand
 from loader import load, set_hash, summarise
 
-SETS_DIR = Path(os.environ.get("EVAL_SETS_DIR", HERE.parent)).resolve()
+SETS_DIR = Path(os.environ.get("EVAL_SETS_DIR", HERE.parent / "sets")).resolve()
 REPORTS_DIR = Path(os.environ.get("EVAL_REPORTS_DIR", HERE.parent / "reports")).resolve()
 RUBRIC_VERSION = os.environ.get("RUBRIC_VERSION", "rubric.v1")
 JUDGE_MODEL = os.environ.get("JUDGE_MODEL") or "not-used"
