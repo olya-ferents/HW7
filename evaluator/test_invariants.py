@@ -122,20 +122,28 @@ class InvariantTests(unittest.TestCase):
 
     def test_case_loading_and_evaluation(self):
         case = loader.load(CASE)[0]
-        summary = {"name": "agent.summarize", "children": []}
-        for amount, code, expected in [
-            (240, "duplicate-charge", True),
-            (180, "duplicate_charge", False),
-            (240, "service_not_rendered", False),
-        ]:
-            turns = [{"answer": "", "trace": {}} for _ in range(7)]
-            turns[0]["trace"] = transaction_trace()
-            turns[1]["answer"] = "under duplicate_charge"
-            turns[2]["trace"] = summary
-            turns[4]["answer"] = f"TX-0401: EUR {amount}.00 under {code}."
-            with self.subTest(amount=amount, code=code):
-                self.assertEqual(
-                    runner.evaluate(case, [{"turns": turns}]).passed, expected)
+        checks = case["additional_metadata"]["checks"]
+        self.assertFalse(any(c.get("label") == "reason_code baseline"
+                             for c in checks))
+        turns = [{"answer": "", "trace": {}} for _ in range(7)]
+        turns[0]["trace"] = transaction_trace()
+        turns[2]["trace"] = {"name": "agent.summarize", "children": []}
+        turns[4]["answer"] = "TX-0401: EUR 240.00."
+        self.assertTrue(runner.evaluate(case, [{"turns": turns}]).passed)
+
+    def test_unconfirmed_reason_code_is_not_required(self):
+        cases = {case["id"]: case for case in loader.load(CASE)}
+        for case_id in ("CONV-002", "CONV-007"):
+            with self.subTest(case_id=case_id):
+                invariants = cases[case_id]["additional_metadata"]["invariants"]
+                self.assertEqual([inv["entity"] for inv in invariants],
+                                 ["dispute_amount"])
+
+        confirmed_reason = cases["CONV-005"]["additional_metadata"]["invariants"]
+        reason = next(inv for inv in confirmed_reason
+                      if inv["entity"] == "reason_code")
+        self.assertEqual(reason["oracle_by"], "human:customer_statement")
+        self.assertEqual(reason["expected"], "duplicate_charge")
 
     def test_optional_absence_cannot_mask_required_probe(self):
         case = loader.load(CASE)[0]

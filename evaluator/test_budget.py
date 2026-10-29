@@ -116,6 +116,7 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(meta["gate"], "release")
         self.assertEqual(meta["runs"], 5)
         self.assertEqual(meta["budget"]["tokens_total"], 67000)
+        self.assertNotIn("latency_ms", meta["budget"])
 
     def test_conv_token_caps_are_baseline_calibrated_release_cases(self):
         expected_caps = {
@@ -131,6 +132,7 @@ class BudgetTests(unittest.TestCase):
             with self.subTest(case_id=case_id):
                 meta = cases[case_id]["additional_metadata"]
                 self.assertEqual(meta["budget"]["tokens_total"], cap)
+                self.assertNotIn("latency_ms", meta["budget"])
                 self.assertEqual(meta["gate"], "release")
                 self.assertEqual(meta["runs"], 5)
 
